@@ -318,7 +318,7 @@ OpenIDConnect.prototype.errorHandle = function(res, uri, error, desc) {
     redirect.query.error_description = desc; //'Parameter '+x+' is mandatory.';
     res.redirect(400, url.format(redirect));
   } else {
-    res.send(400, error+': '+desc);
+    res.status(400).send(error+': '+desc);
   }
 };
 
@@ -333,10 +333,10 @@ OpenIDConnect.prototype.endpointParams = function (spec, req, res, next) {
 
 OpenIDConnect.prototype.parseParams = function(req, res, spec) {
   var params = {};
-  var r = req.param('redirect_uri');
+  var r = req.params.redirect_uri;
   for(var i in spec) {
     if(spec.hasOwnProperty(i)) {
-      var x = req.param(i);
+      var x = req.body[i] || req.params[i] || req.query[i];
       if(x) {
         params[i] = x;
       }
@@ -705,8 +705,8 @@ OpenIDConnect.prototype.consent = function() {
     self.use('consent'),
     function(req, res, next) {
       /*jshint unused:false */
-      var accept = req.param('accept');
-      var return_url = req.param('return_url');
+      var accept = req.body.accept || req.params.accept || req.query.accept;
+      var return_url = req.body.return_url || req.params.return_url || req.query.return_url;
       //var client_id = req.query.client_id || req.body.client_id || false;
       if(accept) {
         var scopes = [];

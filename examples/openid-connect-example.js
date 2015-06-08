@@ -82,7 +82,7 @@ var validateUser = function (req, next) {
 
 var afterLogin = function (req, res, next) {
   /*jshint unused:false */
-  res.redirect(req.param('return_url')||'/user');
+  res.redirect(req.body.return_url||req.params.return_url||req.query.return_url||'/user');
 };
 
 var loginError = function (err, req, res, next) {
