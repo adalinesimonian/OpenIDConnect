@@ -63,7 +63,7 @@ var defaults = {
         middle_name: 'string',
         family_name: {type: 'string', required: true},
         profile: 'string',
-        email: {type: 'string', email: true, required: true, unique: true},
+        email: {type: 'email', required: true, unique: true},
         password: 'string',
         picture: 'binary',
         birthdate: 'date',
@@ -134,6 +134,7 @@ var defaults = {
       attributes: {
         user: {model: 'user', required: true},
         client: {model: 'client', required: true},
+        date: {type: 'date', required: true},
         scopes: 'array'
       }
     },
@@ -316,7 +317,7 @@ OpenIDConnect.prototype.errorHandle = function(res, uri, error, desc) {
     var redirect = url.parse(uri, true);
     redirect.query.error = error; //'invalid_request';
     redirect.query.error_description = desc; //'Parameter '+x+' is mandatory.';
-    res.redirect(400, url.format(redirect));
+    res.redirect(url.format(redirect));
   } else {
     res.status(400).send(error+': '+desc);
   }
@@ -716,7 +717,7 @@ OpenIDConnect.prototype.consent = function() {
           }
         }
         req.model.consent.destroy({user: req.session.user, client: req.session.client_id}, function(err, result) {
-          req.model.consent.create({user: req.session.user, client: req.session.client_id, scopes: scopes}, function(err, consent) {
+          req.model.consent.create({user: req.session.user, client: req.session.client_id, date: Date.now(), scopes: scopes}, function(err, consent) {
             res.redirect(return_url);
           });
         });
@@ -800,12 +801,16 @@ OpenIDConnect.prototype.token = function() {
               .exec(function(err, auth) {
                 if(!err && auth) {
                   if(auth.status!='created') {
-                    auth.refresh.forEach(function(refresh) {
-                      refresh.destroy();
-                    });
-                    auth.access.forEach(function(access) {
-                      access.destroy();
-                    });
+                    if (auth.refresh) {
+                      auth.refresh.forEach(function(refresh) {
+                        refresh.destroy();
+                      });
+                    }
+                    if (auth.access) {
+                      auth.access.forEach(function(access) {
+                        access.destroy();
+                      });
+                    }
                     auth.destroy();
                     deferred.reject({type: 'error', error: 'invalid_grant', msg: 'Authorization code already used.'});
                   } else {
