@@ -134,7 +134,7 @@ var defaults = {
       attributes: {
         user: {model: 'user', required: true},
         client: {model: 'client', required: true},
-        date: {type: 'date', required: true},
+        date: {type: 'datetime', required: true},
         scopes: 'array'
       }
     },
@@ -717,7 +717,7 @@ OpenIDConnect.prototype.consent = function() {
           }
         }
         req.model.consent.destroy({user: req.session.user, client: req.session.client_id}, function(err, result) {
-          req.model.consent.create({user: req.session.user, client: req.session.client_id, date: Date.now(), scopes: scopes}, function(err, consent) {
+          req.model.consent.create({user: req.session.user, client: req.session.client_id, date: new Date(), scopes: scopes}, function(err, consent) {
             res.redirect(return_url);
           });
         });
